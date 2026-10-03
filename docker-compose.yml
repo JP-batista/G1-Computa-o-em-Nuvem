@@ -1,0 +1,56 @@
+services:
+  app1:
+    build: ./app
+    image: msg-app
+    container_name: app1
+    environment:
+      INSTANCE_NAME: app1
+      PEERS: "app2,app3"
+      DATA_DIR: /data
+    ports:
+      - "5001:5000"
+    volumes:
+      - mensagens:/data
+    networks:
+      - msgnet
+
+  app2:
+    build: ./app
+    image: msg-app
+    container_name: app2
+    environment:
+      INSTANCE_NAME: app2
+      PEERS: "app1,app3"
+      DATA_DIR: /data
+    ports:
+      - "5002:5000"
+    volumes:
+      - mensagens:/data
+    networks:
+      - msgnet
+    depends_on:
+      - app1
+
+  app3:
+    build: ./app
+    image: msg-app
+    container_name: app3
+    environment:
+      INSTANCE_NAME: app3
+      PEERS: "app1,app2"
+      DATA_DIR: /data
+    ports:
+      - "5003:5000"
+    volumes:
+      - mensagens:/data
+    networks:
+      - msgnet
+    depends_on:
+      - app1
+
+volumes:
+  mensagens:
+
+networks:
+  msgnet:
+    driver: bridge
