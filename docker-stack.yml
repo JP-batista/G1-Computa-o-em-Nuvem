@@ -1,0 +1,63 @@
+# Versão para Docker Swarm (docker stack deploy).
+# Diferenças em relação ao docker-compose.yml:
+# - sem build/container_name/depends_on (o swarm ignora); a imagem msg-app é construída antes
+# - rede overlay no lugar da bridge
+# - bloco deploy com réplicas e política de restart
+services:
+  app1:
+    image: msg-app:latest
+    environment:
+      INSTANCE_NAME: app1
+      PEERS: "app2,app3"
+      DATA_DIR: /data
+    ports:
+      - "5001:5000"
+    volumes:
+      - mensagens:/data
+    networks:
+      - msgnet
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  app2:
+    image: msg-app:latest
+    environment:
+      INSTANCE_NAME: app2
+      PEERS: "app1,app3"
+      DATA_DIR: /data
+    ports:
+      - "5002:5000"
+    volumes:
+      - mensagens:/data
+    networks:
+      - msgnet
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  app3:
+    image: msg-app:latest
+    environment:
+      INSTANCE_NAME: app3
+      PEERS: "app1,app2"
+      DATA_DIR: /data
+    ports:
+      - "5003:5000"
+    volumes:
+      - mensagens:/data
+    networks:
+      - msgnet
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  mensagens:
+
+networks:
+  msgnet:
+    driver: overlay

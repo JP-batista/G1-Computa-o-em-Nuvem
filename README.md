@@ -42,6 +42,21 @@ docker compose down            # para e remove (o volume é mantido)
 docker compose down -v         # também apaga o volume com as mensagens
 ```
 
+### Docker Swarm
+
+O arquivo `docker-stack.yml` sobe os mesmos 3 serviços como um stack do Swarm (rede `overlay`, sem `build`/`container_name`/`depends_on`, que o Swarm não usa).
+
+```bash
+docker swarm init                          # transforma a máquina em manager (uma vez só)
+docker build -t msg-app:latest ./app       # o stack não faz build, a imagem precisa existir
+docker stack deploy -c docker-stack.yml msg
+docker stack services msg                  # cada serviço deve mostrar 1/1
+docker service logs msg_app1
+docker stack rm msg                        # remove o stack
+```
+
+Cada serviço fica com 1 réplica, porque cada um tem identidade própria (`INSTANCE_NAME` e arquivo de log). O volume `mensagens` é local, então o compartilhamento entre serviços só funciona em um swarm de um nó. Com vários nós, seria preciso um volume compartilhado (NFS, por exemplo) e um registry para a imagem.
+
 ## Endpoints
 
 | Método | Rota | Descrição |
